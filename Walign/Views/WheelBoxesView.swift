@@ -1,53 +1,18 @@
 import SwiftUI
 
 struct WheelBoxesView: View {
-    var lfOffset: Double?
-    var rfOffset: Double?
-    var lrOffset: Double?
-    var rrOffset: Double?
+    var offset: Double?
+    var label: String
     
     @Binding var selectedBox: String?
-    
-    var setLF: () -> Void
-    var setRF: () -> Void
-    var setLR: () -> Void
-    var setRR: () -> Void
-    
-    var isLFReadingDone: Bool
-    var isRFReadingDone: Bool
-    var isLRReadingDone: Bool
-    var isRRReadingDone: Bool
+    var setAction: () -> Void
+    var isReadingDone: Bool
     
     var body: some View {
         VStack {
-            HStack {
-                WheelBox(label: "LF", offset: lfOffset, isSelected: selectedBox == "LF", isReadingDone: isLFReadingDone) {
-                    selectedBox = "LF"
-                    setLF()
-                }
-                Spacer()
-                WheelBox(label: "RF", offset: rfOffset, isSelected: selectedBox == "RF", isReadingDone: isRFReadingDone) {
-                    selectedBox = "RF"
-                    setRF()
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 30)
-            
-            if selectedBox == "LR" || selectedBox == "RR" {
-                HStack {
-                    WheelBox(label: "LR", offset: lrOffset, isSelected: selectedBox == "LR", isReadingDone: isLRReadingDone) {
-                        selectedBox = "LR"
-                        setLR()
-                    }
-                    Spacer()
-                    WheelBox(label: "RR", offset: rrOffset, isSelected: selectedBox == "RR", isReadingDone: isRRReadingDone) {
-                        selectedBox = "RR"
-                        setRR()
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 30)
+            WheelBox(label: label, offset: offset, isSelected: selectedBox == label, isReadingDone: isReadingDone) {
+                selectedBox = label
+                setAction()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -57,5 +22,5 @@ struct WheelBoxesView: View {
 }
 
 #Preview {
-    WheelBoxesView(lfOffset: 0, rfOffset: 0, lrOffset: 0, rrOffset: 0, selectedBox: .constant(nil), setLF: {}, setRF: {}, setLR: {}, setRR: {}, isLFReadingDone: false, isRFReadingDone: false, isLRReadingDone: false, isRRReadingDone: false)
+    WheelBoxesView(offset: 0, label: "LF", selectedBox: .constant(nil), setAction: {}, isReadingDone: false)
 }

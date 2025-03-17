@@ -10,7 +10,6 @@ class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
     @Published var lrReading: CLLocationDirection? = nil
     @Published var rrReading: CLLocationDirection? = nil
     
-    // Add toe measurements
     @Published var flToe: Double? = nil
     @Published var frToe: Double? = nil
     @Published var rlToe: Double? = nil

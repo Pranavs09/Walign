@@ -1,113 +1,95 @@
 import SwiftUI
+import CoreMotion
 
 struct MainView: View {
     @StateObject private var locationManager = LocationManager()
-    @State private var selectedWheelOption = 1
     @State private var selectedToePrecision = "0.05"
     @State private var selectedBox: String? = nil
     @State private var showCalibrationAlert = false
     
     let toePrecisionOptions = ["0.05", "0.02", "0.005"]
     
+    var totalToe: String {
+        let lfToe = locationManager.flToe
+        let rfToe = locationManager.frToe
+        
+        if lfToe == nil && rfToe == nil {
+            return "---"
+        } else {
+            let total = (lfToe ?? 0.0) - (rfToe ?? 0.0)
+            return String(format: "%.2f", total)
+        }
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             VStack {
-                Text("Select Wheels")
-                    .font(.largeTitle)
+                Text("Front Wheels")
+                    .frame(maxWidth: .infinity, maxHeight: 50)
+                    .background(Color.blue.opacity(0.2))
+                    .cornerRadius(8)
                     .foregroundColor(.black)
-                
-                // Wheel Selection Buttons
-                HStack {
-                    Button(action: {
-                        selectedWheelOption = 0
-                        resetState()
-                    }) {
-                        Text("Front Wheels")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(selectedWheelOption == 0 ? Color.blue.opacity(0.2) : Color.clear)
-                            .cornerRadius(8)
-                            .foregroundColor(.black)
-                    }
-                    
-                    Button(action: {
-                        selectedWheelOption = 1
-                        resetState()
-                    }) {
-                        Text("All Wheels")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(selectedWheelOption == 1 ? Color.blue.opacity(0.2) : Color.clear)
-                            .cornerRadius(8)
-                            .foregroundColor(.black)
-                    }
-                }
-                .padding(.horizontal, geometry.size.width * 0.05)
-                
-                // Front Wheels Section
-                VStack {
-                    HStack {
-                        Text("FL Toe: \(locationManager.flToe != nil ? String(format: "%.2f", locationManager.flToe!) : "---")")
-                            .foregroundColor(.black)
-                        
-                        Spacer()
-                        
-                        Text("FR Toe: \(locationManager.frToe != nil ? String(format: "%.2f", locationManager.frToe!) : "---")")
-                            .foregroundColor(.black)
-                    }
                     .padding(.horizontal, geometry.size.width * 0.05)
-                    
-                    WheelBoxesView(
-                        lfOffset: locationManager.calculateOffset(reading: locationManager.lfReading),
-                        rfOffset: locationManager.calculateOffset(reading: locationManager.rfReading),
-                        selectedBox: $selectedBox,
-                        setLF: {
-                            locationManager.setLFReading(with: Double(selectedToePrecision) ?? 0.05)
-                        },
-                        setRF: {
-                            locationManager.setRFReading(with: Double(selectedToePrecision) ?? 0.05)
-                        },
-                        setLR: {},
-                        setRR: {},
-                        isLFReadingDone: locationManager.flToe != nil,
-                        isRFReadingDone: locationManager.frToe != nil,
-                        isLRReadingDone: false,
-                        isRRReadingDone: false
-                    )
-                }
-                .padding(.horizontal, geometry.size.width * 0.05)
-                .padding(.vertical, geometry.size.height * 0.05)
-
-                // Rear Wheels Section (Only if "All Wheels" is selected)
-                if selectedWheelOption == 1 {
+                
+                HStack {
                     VStack {
+                        HStack {
+                            Text("FL Toe: \(locationManager.flToe != nil ? String(format: "%.2f", locationManager.flToe!) : "---")")
+                                .foregroundColor(.black)
+                        }
+                        .padding(.horizontal, geometry.size.width * 0.01)
+                        
                         WheelBoxesView(
-                            lfOffset: locationManager.calculateOffset(reading: locationManager.lfReading),
-                            rfOffset: locationManager.calculateOffset(reading: locationManager.rfReading),
+                            offset: locationManager.calculateOffset(reading: locationManager.lfReading),
+                            label: "LF",
                             selectedBox: $selectedBox,
-                            setLF: {
+                            setAction: {
                                 locationManager.setLFReading(with: Double(selectedToePrecision) ?? 0.05)
                             },
-                            setRF: {
-                                locationManager.setRFReading(with: Double(selectedToePrecision) ?? 0.05)
-                            },
-                            setLR: {
-                                locationManager.setLRReading(with: Double(selectedToePrecision) ?? 0.05)
-                            },
-                            setRR: {
-                                locationManager.setRRReading(with: Double(selectedToePrecision) ?? 0.05)
-                            },
-                            isLFReadingDone: locationManager.flToe != nil,
-                            isRFReadingDone: locationManager.frToe != nil,
-                            isLRReadingDone: locationManager.rlToe != nil,
-                            isRRReadingDone: locationManager.rrToe != nil
+                            isReadingDone: locationManager.flToe != nil
                         )
                     }
-                    .padding(.horizontal, geometry.size.width * 0.05)
-                    .padding(.vertical, geometry.size.height * 0.05)
+                    .padding(.horizontal, geometry.size.width * 0.01)
+                    
+                    VStack {
+                        HStack {
+                            Text("Total Toe: \(totalToe)")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                        }
+                        .padding(.horizontal, geometry.size.width * 0.01)
+                        
+                        
+                        HStack {
+                                LevelingLinesView()
+                            }
+                        .padding(.horizontal, geometry.size.width * 0.01)
+                        .padding(.vertical, geometry.size.height * 0.01)
+                        }
+                    .padding(.vertical, geometry.size.height * 0.01)
+                    
+                    VStack {
+                        HStack {
+                            Text("FR Toe: \(locationManager.frToe != nil ? String(format: "%.2f", locationManager.frToe!) : "---")")
+                                .foregroundColor(.black)
+                        }
+                        .padding(.horizontal, geometry.size.width * 0.01)
+                        
+                        WheelBoxesView(
+                            offset: locationManager.calculateOffset(reading: locationManager.rfReading),
+                            label: "RF",
+                            selectedBox: $selectedBox,
+                            setAction: {
+                                locationManager.setRFReading(with: Double(selectedToePrecision) ?? 0.05)
+                            },
+                            isReadingDone: locationManager.frToe != nil
+                        )
+                    }
+                    .padding(.horizontal, geometry.size.width * 0.01)
                 }
+                .padding(.horizontal, geometry.size.width * 0.01)
+                .padding(.vertical, geometry.size.height * 0.1)
                 
-                // Reset and Toe Precision Picker
                 HStack {
                     Button("Reset") {
                         resetState()
@@ -147,7 +129,6 @@ struct MainView: View {
                 .background(Color.blue.opacity(0.4))
                 .cornerRadius(8)
                 .foregroundColor(.black)
-                .padding(.top, 20)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding()
@@ -165,19 +146,13 @@ struct MainView: View {
     private func resetState() {
         locationManager.lfReading = nil
         locationManager.rfReading = nil
-        locationManager.lrReading = nil
-        locationManager.rrReading = nil
         locationManager.flToe = nil
         locationManager.frToe = nil
-        locationManager.rlToe = nil
-        locationManager.rrToe = nil
-        
         selectedToePrecision = "0.05"
         selectedBox = nil
     }
 }
 
-// Preview
 #Preview {
     MainView()
 }
