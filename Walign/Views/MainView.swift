@@ -13,12 +13,13 @@ struct MainView: View {
         let lfToe = locationManager.flToe
         let rfToe = locationManager.frToe
         
-        if lfToe == nil && rfToe == nil {
-            return "---"
-        } else {
-            let total = (lfToe ?? 0.0) - (rfToe ?? 0.0)
+        if let lfToe = lfToe, let rfToe = rfToe {
+            let total = lfToe - rfToe
             return String(format: "%.2f", total)
+        } else {
+            return "---"
         }
+
     }
     
     var body: some View {
@@ -34,7 +35,7 @@ struct MainView: View {
                 HStack {
                     VStack {
                         HStack {
-                            Text("FL Toe: \(locationManager.flToe != nil ? String(format: "%.2f", locationManager.flToe!) : "---")")
+                            Text("FL")
                                 .foregroundColor(.black)
                         }
                         .padding(.horizontal, geometry.size.width * 0.01)
@@ -53,7 +54,7 @@ struct MainView: View {
                     
                     VStack {
                         HStack {
-                            Text("Total Toe: \(totalToe)")
+                            Text("Total: \(totalToe)")
                                 .font(.headline)
                                 .foregroundColor(.black)
                         }
@@ -70,7 +71,7 @@ struct MainView: View {
                     
                     VStack {
                         HStack {
-                            Text("FR Toe: \(locationManager.frToe != nil ? String(format: "%.2f", locationManager.frToe!) : "---")")
+                            Text("FR")
                                 .foregroundColor(.black)
                         }
                         .padding(.horizontal, geometry.size.width * 0.01)
